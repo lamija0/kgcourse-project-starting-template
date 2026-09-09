@@ -90,27 +90,35 @@ export class MapComponent implements OnInit, OnDestroy {
       const stopTimes$ = this.http
         .get('/assets/data/wienerlinien/stop_times.txt', {responseType: 'text'})
         .pipe(
-          map<string, StopTime[]>(data => Papa.parse(data, {
-            header: true,
-            skipEmptyLines: true
-          }).data)
+          map((rawData: string) => {
+            const parsed = Papa.parse<StopTime>(rawData, {
+              header: true,
+              skipEmptyLines: true
+            });
+
+            return parsed.data;
+          })
         );
 
-      this.tripsPerStop$ = stopTimes$
-        .pipe(
-          concatMap((arr) => from(arr)),
-          map<StopTime, TripsPerStop>((e) => ({
-            meta_stop_id: e.stop_id.substring(0, this.nthIndex(e.stop_id, ':', 3)),
-            trip_id: e.trip_id,
-          })),
-          groupBy(data => data.meta_stop_id),
-          mergeMap((group) => zip(of(group.key), group.pipe(map(el => el.trip_id), toArray()))),
-          toArray(),
-          map(data => data.reduce((obj: { [key: string]: string[] }, item) => {
-            obj[item[0]] = item[1];
-            return obj
-          }, {})),
-        );
+      this.tripsPerStop$ = stopTimes$.pipe(
+        map((arr: StopTime[]) =>
+          arr.reduce((obj: { [key: string]: string[] }, entry: StopTime) => {
+
+            const metaStopId = entry.stop_id
+              .split(':')
+              .slice(0, 3)
+              .join(':');
+
+            if (!obj[metaStopId]) {
+              obj[metaStopId] = [];
+            }
+
+            obj[metaStopId].push(entry.trip_id);
+
+            return obj;
+          }, {})
+        )
+      );
 
       this.tripsPerStop = {};
       this.tripsPerStopSubscription = this.tripsPerStop$.subscribe((data) => {

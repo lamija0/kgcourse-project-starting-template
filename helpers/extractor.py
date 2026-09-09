@@ -5,7 +5,11 @@ from os.path import isfile, join
 
 mypath = "./wh"
 
-filePaths = [join(mypath, f) for f in listdir(mypath) if isfile(join(mypath, f))]
+filePaths = [
+    join(mypath, f)
+    for f in listdir(mypath)
+    if isfile(join(mypath, f)) and f.endswith(".json")
+]
 
 exportData = []
 
@@ -16,7 +20,7 @@ properties = [
 	"COUNTRY",
 
 	"HEADING",
-	"BODY_DYN"
+	"BODY_DYN",
 
 	"PROPERTY_TYPE",
 	"PROPERTY_TYPE_FLAT",
