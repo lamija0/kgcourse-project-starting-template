@@ -59,6 +59,10 @@ The subset was created using:
 python create_gtfs_subset.py
 ```
 
+This script is only needed to recreate the subset. It expects the full GTFS dataset
+(downloaded on 07.09.2026 from https://www.data.gv.at/datasets/ab4a73b6-1c2d-42e1-b4d9-049e04889cf0)
+in `src/assets/data/wienerlinien_full/`. The full dataset is not included because of its size.
+
 ### Housing Data
 
 The second dataset is a small, manually collected set of housing advertisements.
@@ -75,10 +79,12 @@ The processed housing dataset is included in:
 src/assets/data/flat_info.json
 ```
 
-The housing data was extracted using:
+The housing data was extracted by running the following command inside the `helpers/` folder
+and copying the resulting `flat_info.json` to `src/assets/data/`:
 
-```text
-helpers/extractor.py
+```bash
+cd helpers
+python extractor.py
 ```
 
 ## Knowledge Graph Construction
@@ -188,6 +194,25 @@ Run the recursive U-Bahn reachability example:
 python logic/recursive_reachability.py
 ```
 
+## Service
+
+Run the service query:
+
+```bash
+python service/service_query.py
+```
+
+The script loads `vienna_kg_logic_evolved.ttl` and `vienna_kg_ml_evolved.ttl` into one combined
+Knowledge Graph and answers the service question: *Which flats below a given monthly rent are well
+connected to public transport?*
+
+A flat is considered well connected if it has at least 43 accessible route variants
+(`accessibleViaRoute`), which corresponds to the *High* accessibility class. For each returned flat,
+the rule-based accessibility class is compared with the GCN prediction (`hasPredictedAccessibility`).
+The parameters `MAX_PRICE` and `MIN_ROUTE_VARIANTS` can be changed at the top of the script.
+
+Both evolved graphs must exist before running the service, i.e. run the GNN and logic steps first.
+
 ## Map Application
 
 Start the Angular/Leaflet application with:
@@ -204,7 +229,8 @@ http://localhost:4200/
 
 The map application visualizes the housing advertisements and GTFS data.
 
-The RDF Knowledge Graph, logical reasoning, Knowledge Graph Embeddings, and GCN experiments are executed separately using the Python scripts described above.
+The RDF Knowledge Graph, logical reasoning, Knowledge Graph Embeddings, GCN experiments and the
+service query are executed separately using the Python scripts described above.
 
 ## Recommended Execution Order
 
@@ -224,6 +250,8 @@ python ml/evolution/add_gcn_predictions_to_kg.py
 
 python logic/apply_rules.py
 python logic/recursive_reachability.py
+
+python service/service_query.py
 ```
 
 ## Generated Outputs
@@ -239,6 +267,18 @@ kg/output/vienna_kg_logic_evolved.ttl
 ```
 
 These outputs correspond to the results discussed in the portfolio report.
+
+## Mapping to the Portfolio Report
+
+| Folder / script | Report section |
+| --- | --- |
+| `create_gtfs_subset.py`, `helpers/`, `src/assets/data/` | 2.1 Datasets |
+| `kg/build_kg.py` | 2.3 Knowledge Graph Construction |
+| `ml/kge/` | 3.1 Knowledge Graph Embeddings |
+| `ml/gnn/` | 3.2 Graph Neural Networks |
+| `ml/evolution/` | 3.3 KG Evolution using ML-based Representations |
+| `logic/apply_rules.py`, `logic/recursive_reachability.py` | 4.1 Rules and Queries, 4.2 KG Evolution through Logical Reasoning |
+| `service/service_query.py` | 1.2 Service, 5.1 Service Outcome |
 
 ## Project Structure
 
@@ -261,6 +301,9 @@ These outputs correspond to the results discussed in the portfolio report.
 │   ├── evolution/
 │   ├── gnn/
 │   └── kge/
+│
+├── service/
+│   └── service_query.py
 │
 ├── src/
 │   └── assets/
