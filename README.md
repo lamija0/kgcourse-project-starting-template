@@ -61,7 +61,7 @@ python create_gtfs_subset.py
 
 This script is only needed to recreate the subset. It expects the full GTFS dataset
 (downloaded on 07.09.2026 from https://www.data.gv.at/datasets/ab4a73b6-1c2d-42e1-b4d9-049e04889cf0)
-in `src/assets/data/wienerlinien_full/`. The full dataset is not included because of its size.
+in `src/assets/data/wienerlinien_full/`. The full dataset is included there.
 
 ### Housing Data
 
